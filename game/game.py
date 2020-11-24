@@ -39,7 +39,7 @@ class Game(object):
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.TEXTINPUT:
-                    self.board.global_control(event.text)
+                    self.board.control_first(event.text)
 
             state, obstacle_indices, customer_indices, salesman_indices = self.board.view()
             if state == "win":

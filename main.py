@@ -8,9 +8,12 @@ board = Board(
     customer=0.05,
     salesman=0.0,
 )
-board.obstacle[0, 0] = False
-board.customer[0, 0] = False
-board.salesman[0, 0] = True
+try:
+    board.obstacle.remove((0, 0))
+    board.customer.remove((0, 0))
+except ValueError as err:
+    print(err)
+board.salesman = [(0, 0)]
 
 game = game.Game(board, (20, 20))
 
