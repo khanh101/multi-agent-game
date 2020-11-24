@@ -66,7 +66,8 @@ class Game(object):
                 )
 
             pygame.display.flip()
-            self.board.control_auto()
+            if state == "":
+                self.board.control_auto()
         pygame.quit()
 
     def __blits_sequence(self, indices: List[Tuple[int, int]], surface: pygame.Surface) -> List[
