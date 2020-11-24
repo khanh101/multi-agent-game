@@ -2,7 +2,6 @@ from typing import Tuple, Union, List
 
 import numpy as np
 
-
 class Board(object):
     shape: Tuple[int, int]
     obstacle: np.ndarray
@@ -45,31 +44,29 @@ class Board(object):
 
         self.__ensure_valid()
 
-    def iterate(self):
-        pass
+    def global_control(self, shift: str):
+        shift_vector = {
+            "w": (-1, 0),
+            "s": (+1, 0),
+            "a": (0, -1),
+            "d": (0, +1),
+        }
+        self.salesman = Board.__2dshift(self.salesman, shift_vector[shift])
+        self.__ensure_valid()
 
-
-
-
-
-
-
-
-    def obstacle_indices(self) -> List[Tuple[int, int]]:
-        return Board.__mask_to_indices(self.obstacle)
-
-    def customer_indices(self) -> List[Tuple[int, int]]:
-        return Board.__mask_to_indices(self.customer)
-
-    def salesman_indices(self) -> List[Tuple[int, int]]:
-        return Board.__mask_to_indices(self.salesman)
+    def view(self) -> Tuple[List[Tuple[int, int]], List[Tuple[int, int]], List[Tuple[int, int]]]:
+        return (
+            Board.__mask_to_indices(self.obstacle),
+            Board.__mask_to_indices(self.customer),
+            Board.__mask_to_indices(self.salesman),
+        )
 
     def __ensure_valid(self):
         # ensure there is no customer and salesman stands on the obstacle
         obstacle = self.obstacle
         customer = self.customer
         salesman = self.salesman
-        self.customer[salesman] = False # if a salesman stands on a customer, remove customer
+        self.customer[salesman] = False  # if a salesman stands on a customer, remove customer
         cs = np.logical_or(customer, salesman)
         invalid = np.logical_and(cs, obstacle)
         self.customer[invalid] = False
@@ -121,4 +118,15 @@ class Board(object):
             for w in range(width):
                 if mask[h][w]:
                     out.append((h, w))
+        return out
+
+    @staticmethod
+    def __2dshift(arr: np.ndarray, shift: Tuple[int, int]) -> np.ndarray:
+        out = np.zeros(shape=arr.shape, dtype=arr.dtype)
+        for h in range(arr.shape[0]):
+            for w in range(arr.shape[1]):
+                h1 = h + shift[0]
+                w1 = w + shift[1]
+                if h1 < arr.shape[0] and h1 >= 0 and w1 < arr.shape[1] and w1 >= 0:
+                    out[h1, w1] = arr[h, w]
         return out

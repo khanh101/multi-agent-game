@@ -33,17 +33,21 @@ class Game(object):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.TEXTINPUT:
+                    self.board.global_control(event.text)
+
             self.screen.fill((255, 255, 255))
+            obstacle_indices, customer_indices, salesman_indices = self.board.view()
             self.screen.blits(
-                self.__blits_sequence(self.board.obstacle_indices(), self.obstacle_surf),
+                self.__blits_sequence(obstacle_indices, self.obstacle_surf),
                 doreturn=False,
             )
             self.screen.blits(
-                self.__blits_sequence(self.board.customer_indices(), self.customer_surf),
+                self.__blits_sequence(customer_indices, self.customer_surf),
                 doreturn=False,
             )
             self.screen.blits(
-                self.__blits_sequence(self.board.salesman_indices(), self.salesman_surf),
+                self.__blits_sequence(salesman_indices, self.salesman_surf),
                 doreturn=False,
             )
             pygame.display.flip()
