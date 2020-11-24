@@ -40,7 +40,7 @@ class Game(object):
                     running = False
                 if event.type == pygame.TEXTINPUT:
                     # self.board.control_one(event.text)
-                    self.board.control_auto()
+                    pass
 
             state, obstacle_indices, customer_indices, salesman_indices = self.board.view()
             if state == "win":
@@ -66,6 +66,7 @@ class Game(object):
                 )
 
             pygame.display.flip()
+            self.board.control_auto()
         pygame.quit()
 
     def __blits_sequence(self, indices: List[Tuple[int, int]], surface: pygame.Surface) -> List[
