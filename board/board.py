@@ -2,8 +2,9 @@ from typing import Tuple, Union, List
 
 import numpy as np
 
+
 class Board(object):
-    shape: Tuple[int, int] # hw
+    shape: Tuple[int, int]  # hw
     obstacle: np.ndarray
     customer: np.ndarray
     salesman: np.ndarray

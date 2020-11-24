@@ -7,9 +7,9 @@ from board.board import Board
 
 class Game(object):
     board: Board
-    cell_dim: Tuple[int, int] # wh
-    cell_size: Tuple[int, int] # wh
-    screen_size: Tuple[int, int] # wh
+    cell_dim: Tuple[int, int]  # wh
+    cell_size: Tuple[int, int]  # wh
+    screen_size: Tuple[int, int]  # wh
     obstacle_surf: pygame.Surface = pygame.image.load("./game/assets/obstacle.png")
     customer_surf: pygame.Surface = pygame.image.load("./game/assets/customer.png")
     salesman_surf: pygame.Surface = pygame.image.load("./game/assets/salesman.png")
@@ -31,7 +31,6 @@ class Game(object):
         self.youwin_surf = pygame.transform.scale(Game.youwin_surf, screen_size)
         self.youlose_surf = pygame.transform.scale(Game.youlose_surf, screen_size)
         self.screen = pygame.display.set_mode(size=screen_size)
-
 
     def loop(self):
         running = True
@@ -67,6 +66,7 @@ class Game(object):
 
             pygame.display.flip()
         pygame.quit()
+
     def __blits_sequence(self, indices: List[Tuple[int, int]], surface: pygame.Surface) -> List[
         Tuple[pygame.Surface, pygame.Rect]]:
         # indices h w

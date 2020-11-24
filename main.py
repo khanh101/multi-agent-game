@@ -1,5 +1,3 @@
-import numpy as np
-
 from board.board import Board
 from game import game
 
