@@ -3,7 +3,7 @@ from typing import Tuple, Union, List
 import numpy as np
 
 class Board(object):
-    shape: Tuple[int, int]
+    shape: Tuple[int, int] # hw
     obstacle: np.ndarray
     customer: np.ndarray
     salesman: np.ndarray
@@ -54,8 +54,17 @@ class Board(object):
         self.salesman = Board.__2dshift(self.salesman, shift_vector[shift])
         self.__ensure_valid()
 
-    def view(self) -> Tuple[List[Tuple[int, int]], List[Tuple[int, int]], List[Tuple[int, int]]]:
+    def view(self) -> Tuple[str, List[Tuple[int, int]], List[Tuple[int, int]], List[Tuple[int, int]]]:
+        win = np.sum(self.customer) == 0
+        lose = np.sum(self.salesman) == 0
+        state = ""
+        if lose:
+            state = "lose"
+        if win:
+            state = "win"
+
         return (
+            state,
             Board.__mask_to_indices(self.obstacle),
             Board.__mask_to_indices(self.customer),
             Board.__mask_to_indices(self.salesman),
