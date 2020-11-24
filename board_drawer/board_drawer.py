@@ -1,68 +1,61 @@
-from typing import Callable, Any, Tuple, List
+from typing import Tuple, List
 
-import numpy as np
 import pygame
 
 from board.board import Board
 from game import game
 
 
-def screen_init(
-        cell_dim: Tuple[int, int],
-        cell_size: Tuple[int, int],
-) -> pygame.Surface:
-    global __obstacle, __customer, __salesman
-    __obstacle = pygame.transform.scale(__obstacle, cell_size)
-    __customer = pygame.transform.scale(__customer, cell_size)
-    __salesman = pygame.transform.scale(__salesman, cell_size)
-    global __cell_dim, __cell_size
-    __cell_dim = cell_dim
-    __cell_size = cell_size
-    height, width = cell_dim
-    c_height, c_width = cell_size
-    screen_size = (c_height * height, c_width * width)
-    return game.screen_init(screen_size=screen_size)
+class Game(game.Game):
+    board: Board
+    cell_dim: Tuple[int, int]
+    cell_size: Tuple[int, int]
+    obstacle_surf: pygame.Surface = pygame.image.load("./board_drawer/assets/obstacle.png")
+    customer_surf: pygame.Surface = pygame.image.load("./board_drawer/assets/customer.png")
+    salesman_surf: pygame.Surface = pygame.image.load("./board_drawer/assets/salesman.png")
 
+    def __init__(self, board: Board, cell_size: Tuple[int, int] = (50, 50)):
+        height, width = board.shape
+        c_height, c_width = cell_size
+        super(Game, self).__init__(screen_size=(c_height * height, c_width * width))
+        self.board = board
+        self.cell_dim = board.shape
+        self.cell_size = cell_size
+        self.obstacle_surf = pygame.transform.scale(Game.obstacle_surf, cell_size)
+        self.customer_surf = pygame.transform.scale(Game.customer_surf, cell_size)
+        self.salesman_surf = pygame.transform.scale(Game.salesman_surf, cell_size)
 
-def screen_update(
-        board: Board,
-        screen: pygame.Surface,
-) -> Callable[[], Any]:
+    def loop(self):
+        def update():
+            self.screen.fill((255, 255, 255))
+            self.screen.blits(
+                self.__blits_sequence(self.board.obstacle_indices(), self.obstacle_surf),
+                doreturn=False,
+            )
+            self.screen.blits(
+                self.__blits_sequence(self.board.customer_indices(), self.customer_surf),
+                doreturn=False,
+            )
+            self.screen.blits(
+                self.__blits_sequence(self.board.salesman_indices(), self.salesman_surf),
+                doreturn=False,
+            )
 
-    def update():
-        screen.fill((255, 255, 255))
-        # draw obstacle
-        screen.blits(
-            __blits_sequence(board.obstacle_indices(), __obstacle),
-            doreturn= False,
+        def callback():
+            self.board.iterate()
+
+        super(Game, self).loop(
+            update=update,
+            callback=callback,
         )
-        # draw customer
-        screen.blits(
-            __blits_sequence(board.customer_indices(), __customer),
-            doreturn= False,
-        )
-        # draw salesman
-        screen.blits(
-            __blits_sequence(board.salesman_indices(), __salesman),
-            doreturn= False,
-        )
+        pass
 
-    return update
-
-
-__cell_dim: Tuple[int, int] = (0, 0)
-__cell_size: Tuple[int, int] = (0, 0)
-
-__obstacle: pygame.Surface = pygame.image.load("./board_drawer/assets/obstacle.png")
-__customer: pygame.Surface = pygame.image.load("./board_drawer/assets/customer.png")
-__salesman: pygame.Surface = pygame.image.load("./board_drawer/assets/salesman.png")
-
-
-def __blits_sequence(indices: List[Tuple[int, int]], surface: pygame.Surface) -> List[Tuple[pygame.Surface, pygame.Rect]]:
-    c_height, c_width = __cell_size
-    sequence = []
-    for h, w in indices:
-        sequence.append(
-            (surface, pygame.Rect((w * c_width, h * c_height), __cell_size))
-        )
-    return sequence
+    def __blits_sequence(self, indices: List[Tuple[int, int]], surface: pygame.Surface) -> List[
+        Tuple[pygame.Surface, pygame.Rect]]:
+        c_height, c_width = self.cell_size
+        sequence = []
+        for h, w in indices:
+            sequence.append(
+                (surface, pygame.Rect((w * c_width, h * c_height), self.cell_size))
+            )
+        return sequence

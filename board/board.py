@@ -2,11 +2,13 @@ from typing import Tuple, Union, List
 
 import numpy as np
 
+
 class Board(object):
     shape: Tuple[int, int]
     obstacle: np.ndarray
     customer: np.ndarray
     salesman: np.ndarray
+
     def __init__(
             self,
             shape: Tuple[int, int],
@@ -43,6 +45,9 @@ class Board(object):
 
         self.__ensure_valid()
 
+    def iterate(self):
+        pass
+
     def obstacle_indices(self) -> List[Tuple[int, int]]:
         return Board.__mask_to_indices(self.obstacle)
 
@@ -63,12 +68,12 @@ class Board(object):
         self.salesman[invalid] = False
         pass
 
-
     def __repr__(self) -> str:
         height, width = self.shape
         obstacle = self.obstacle
         customer = self.customer
         salesman = self.salesman
+
         def create_item(o: bool, c: bool, s: bool) -> str:
             out = ""
             if o:
@@ -93,7 +98,6 @@ class Board(object):
             line += "\n"
             out += line
         return out
-
 
     @staticmethod
     def __random_mask(shape: Tuple[int, int], prob: float) -> np.ndarray:
