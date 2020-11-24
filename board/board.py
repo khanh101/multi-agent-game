@@ -1,6 +1,9 @@
 from typing import Tuple, Union, List, Dict
 
 import numpy as np
+import scipy as sp
+import scipy.sparse
+import scipy.optimize
 
 Coord = Tuple[int, int]
 
@@ -38,7 +41,56 @@ class Board(object):
 
         self.__ensure_valid()
 
-    def control_first(self, shift: str):
+    def control_auto(self):
+        print("auto move")
+        # create graph
+        adj, index2coord, coord2index = Board.__create_graph(self.shape, self.obstacle)
+        # shortest path
+        salesman_index = [coord2index[coord] for coord in self.salesman]
+        customer_index = [coord2index[coord] for coord in self.customer]
+        indices =[*salesman_index, *customer_index]
+        dist_reduced, predecessor_reduced = sp.sparse.csgraph.bellman_ford(
+            csgraph=adj,
+            directed=False,
+            indices=indices,
+            return_predecessors=True,
+            unweighted=True,
+        )
+        # dist[i, j]: distance from indices[i] to j
+        # predecessor[i, j]: path from indices[i] to j
+
+        dist_adj = np.empty(shape=(len(salesman_index), len(customer_index)), dtype=int)
+        for h in range(len(salesman_index)):
+            for w in range(len(customer_index)):
+                # distance between salesman h and customer w
+                dist_adj[h, w] = dist_reduced[h, customer_index[w]]
+        row, col = sp.optimize.linear_sum_assignment(dist_adj, maximize=False)
+        salesman2customer: Dict[int, int] = {}
+        for i in range(len(row)):
+            s = salesman_index[row[i]]
+            c = customer_index[col[i]]
+            salesman2customer[s] = c
+
+        new_salesman: List[Coord] = []
+        for s_ in range(len(salesman_index)):
+            s = indices[s_]
+            try:
+                c = salesman2customer[s] # key error if salesman does not mvoe
+                c_ = len(salesman_index) + customer_index.index(c)
+                next_coord_index = predecessor_reduced[c_][s]
+                if next_coord_index == s:
+                    next_coord_index = c
+                next_coord = index2coord[next_coord_index]
+                new_salesman.append(next_coord)
+            except KeyError as e:
+                next_coord = index2coord[s]
+                new_salesman.append(next_coord)
+
+        self.salesman = new_salesman
+        self.__ensure_valid()
+        pass
+
+    def control_one(self, shift: str):
         shift_vector = {
             "w": (-1, 0),
             "s": (+1, 0),
@@ -138,7 +190,7 @@ class Board(object):
                 (h0, w0 - 1),
             ]
             for h1, w1 in neighbours:
-                if Board.__in_range(shape, h1, w1):
+                if (h1, w1) in coord2index:
                     index2 = coord2index[(h1, w1)]
                     if index2 > index1:
                         adj[index1][index2] = True
