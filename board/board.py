@@ -48,6 +48,13 @@ class Board(object):
     def iterate(self):
         pass
 
+
+
+
+
+
+
+
     def obstacle_indices(self) -> List[Tuple[int, int]]:
         return Board.__mask_to_indices(self.obstacle)
 
@@ -62,6 +69,7 @@ class Board(object):
         obstacle = self.obstacle
         customer = self.customer
         salesman = self.salesman
+        self.customer[salesman] = False # if a salesman stands on a customer, remove customer
         cs = np.logical_or(customer, salesman)
         invalid = np.logical_and(cs, obstacle)
         self.customer[invalid] = False

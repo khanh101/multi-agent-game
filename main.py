@@ -1,12 +1,17 @@
-from board.board import Board
-from board_drawer import board_drawer
+import numpy as np
 
+from board.board import Board
+from game import game
+
+shape = (30, 30)
 board = Board(
-    shape=(5, 5),
-    obstacle=0.3,
+    shape=shape,
+    obstacle=0.1,
     customer=0.1,
-    salesman=0.1,
+    salesman=0.0,
 )
-game = board_drawer.Game(board)
+board.salesman[0, 0] = True
+
+game = game.Game(board, (20, 20))
 
 game.loop()
