@@ -1,20 +1,18 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 
 import numpy as np
-import scipy as sp
-import scipy.sparse
 
 class Board(object):
     shape: Tuple[int, int]
-    obstacle: sp.sparse.coo_matrix
-    customer: sp.sparse.coo_matrix
-    salesman: sp.sparse.coo_matrix
+    obstacle: np.ndarray
+    customer: np.ndarray
+    salesman: np.ndarray
     def __init__(
             self,
             shape: Tuple[int, int],
-            obstacle: Union[sp.sparse.coo_matrix, float],
-            customer: Union[sp.sparse.coo_matrix, float],
-            salesman: Union[sp.sparse.coo_matrix, float],
+            obstacle: Union[np.ndarray, float],
+            customer: Union[np.ndarray, float],
+            salesman: Union[np.ndarray, float],
     ):
         """
         :param shape: shape of the board
@@ -28,27 +26,49 @@ class Board(object):
             raise Exception("shape: invalid")
         self.shape = shape
         # obstacle
-        if not isinstance(obstacle, sp.sparse.coo_matrix):
+        if not isinstance(obstacle, np.ndarray):
             self.obstacle = Board.__random_mask(shape, obstacle)
         else:
-            self.obstacle = obstacle.copy()
+            self.obstacle = obstacle
         # customer
-        if not isinstance(customer, sp.sparse.coo_matrix):
+        if not isinstance(customer, np.ndarray):
             self.customer = Board.__random_mask(shape, customer)
         else:
-            self.customer = customer.copy()
+            self.customer = customer
         # salesman
-        if not isinstance(salesman, sp.sparse.coo_matrix):
+        if not isinstance(salesman, np.ndarray):
             self.salesman = Board.__random_mask(shape, salesman)
         else:
-            self.salesman = salesman.copy()
+            self.salesman = salesman
+
+        self.__ensure_valid()
+
+    def obstacle_indices(self) -> List[Tuple[int, int]]:
+        return Board.__mask_to_indices(self.obstacle)
+
+    def customer_indices(self) -> List[Tuple[int, int]]:
+        return Board.__mask_to_indices(self.customer)
+
+    def salesman_indices(self) -> List[Tuple[int, int]]:
+        return Board.__mask_to_indices(self.salesman)
+
+    def __ensure_valid(self):
+        # ensure there is no customer and salesman stands on the obstacle
+        obstacle = self.obstacle
+        customer = self.customer
+        salesman = self.salesman
+        cs = np.logical_or(customer, salesman)
+        invalid = np.logical_and(cs, obstacle)
+        self.customer[invalid] = False
+        self.salesman[invalid] = False
+        pass
 
 
     def __repr__(self) -> str:
         height, width = self.shape
-        obstacle = self.obstacle.toarray()
-        customer = self.customer.toarray()
-        salesman = self.salesman.toarray()
+        obstacle = self.obstacle
+        customer = self.customer
+        salesman = self.salesman
         def create_item(o: bool, c: bool, s: bool) -> str:
             out = ""
             if o:
@@ -76,8 +96,17 @@ class Board(object):
 
 
     @staticmethod
-    def __random_mask(shape: Tuple[int, int], prob: float) -> sp.sparse.coo_matrix:
+    def __random_mask(shape: Tuple[int, int], prob: float) -> np.ndarray:
         mask_arr_float = np.random.random(size=shape)
         mask_arr_bool = mask_arr_float < prob
-        mask = sp.sparse.coo_matrix(mask_arr_bool)
-        return mask
+        return mask_arr_bool
+
+    @staticmethod
+    def __mask_to_indices(mask: np.ndarray) -> List[Tuple[int, int]]:
+        out = []
+        height, width = mask.shape
+        for h in range(height):
+            for w in range(width):
+                if mask[h][w]:
+                    out.append((h, w))
+        return out
