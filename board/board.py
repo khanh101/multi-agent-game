@@ -5,6 +5,8 @@ import scipy as sp
 import scipy.sparse
 import scipy.optimize
 
+from board.util import bellman_ford, linear_sum_assignment
+
 Coord = Tuple[int, int]
 
 class Board(object):
@@ -46,47 +48,28 @@ class Board(object):
         # create graph
         adj, index2coord, coord2index = Board.__create_graph(self.shape, self.obstacle)
         # shortest path
-        salesman_index = [coord2index[coord] for coord in self.salesman]
-        customer_index = [coord2index[coord] for coord in self.customer]
+        salesman_index: List[int] = [coord2index[coord] for coord in self.salesman]
+        customer_index: List[int] = [coord2index[coord] for coord in self.customer]
         indices =[*salesman_index, *customer_index]
-        dist_reduced, predecessor_reduced = sp.sparse.csgraph.bellman_ford(
-            csgraph=adj,
-            directed=False,
-            indices=indices,
-            return_predecessors=True,
-            unweighted=True,
-        )
-        # dist[i, j]: distance from indices[i] to j
-        # predecessor[i, j]: path from indices[i] to j
-
+        dist, predecessor = bellman_ford(adj, indices)
         dist_adj = np.empty(shape=(len(salesman_index), len(customer_index)), dtype=int)
         for h in range(len(salesman_index)):
             for w in range(len(customer_index)):
                 # distance between salesman h and customer w
-                dist_adj[h, w] = dist_reduced[h, customer_index[w]]
-        row, col = sp.optimize.linear_sum_assignment(dist_adj, maximize=False)
+                dist_adj[h, w] = dist[salesman_index[h]][customer_index[w]]
+        assignment = linear_sum_assignment(dist_adj)
         salesman2customer: Dict[int, int] = {}
-        for i in range(len(row)):
-            s = salesman_index[row[i]]
-            c = customer_index[col[i]]
-            salesman2customer[s] = c
+        for pair in assignment:
+            salesman2customer[salesman_index[pair[0]]] = customer_index[pair[1]]
 
-        new_salesman: List[Coord] = []
-        for s_ in range(len(salesman_index)):
-            s = indices[s_]
-            try:
-                c = salesman2customer[s] # key error if salesman does not mvoe
-                c_ = len(salesman_index) + customer_index.index(c)
-                next_coord_index = predecessor_reduced[c_][s]
-                if next_coord_index == s:
-                    next_coord_index = c
-                next_coord = index2coord[next_coord_index]
-                new_salesman.append(next_coord)
-            except KeyError as e:
-                next_coord = index2coord[s]
-                new_salesman.append(next_coord)
-
-        self.salesman = new_salesman
+        for i, s_coord in enumerate(self.salesman):
+            s_index = coord2index[s_coord]
+            c_index = salesman2customer[s_index]
+            next_s_index = predecessor[c_index][s_index]
+            if next_s_index == s_index:
+                next_s_index = c_index
+            next_s_coord = index2coord[next_s_index]
+            self.salesman[i] = next_s_coord
         self.__ensure_valid()
         pass
 
