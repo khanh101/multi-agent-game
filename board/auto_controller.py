@@ -42,7 +42,7 @@ def linear_sum_assignment(cost_matrix: np.ndarray) -> List[Tuple[int, int]]:
     return assignment
 
 
-def auto_control(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
+def minimal_sum_of_distances_controller(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
     '''
     :param graph: adjacency matrix
     :param agent_list: list of agents

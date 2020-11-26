@@ -1,8 +1,9 @@
-from typing import Tuple, List
+from typing import Tuple, List, Any
 
 import pygame
 
 from board.board import Board
+from board.manual_controller import global_control
 
 
 def darken_and_blur(surface: pygame.Surface, amt: float = 30, opacity=200):
@@ -52,7 +53,7 @@ class Game(object):
         self.youlose_surf = pygame.transform.scale(Game.youlose_surf, screen_size)
         self.screen = pygame.display.set_mode(size=screen_size)
 
-    def loop(self, single: bool = True) -> str:
+    def loop(self, auto_controller: Any = None) -> str:
         output = ""
         salesman_surf = self.salesman_surf
         state = ""
@@ -68,8 +69,8 @@ class Game(object):
                             output = event.text
                             running = False
                     else:
-                        if single:
-                            self.board.control_one(event.text)
+                        if auto_controller is None:
+                            self.board.control_force(global_control(event.text))
                             salesman_surf_dict = {
                                 "a": self.salesman_surf_left,
                                 "w": self.salesman_surf,
@@ -111,8 +112,8 @@ class Game(object):
                 )
 
             pygame.display.flip()
-            if not single and state == "":
-                self.board.control_auto()
+            if auto_controller is not None and state == "":
+                self.board.control_auto(auto_controller)
         pygame.quit()
         return output
 

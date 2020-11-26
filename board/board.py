@@ -2,7 +2,7 @@ from typing import Tuple, Union, List, Dict, Optional
 
 import numpy as np
 
-from board.auto_controller import auto_control
+from board.controller import AutoController, Controller
 
 Coord = Tuple[int, int]
 
@@ -51,10 +51,10 @@ class Board(object):
         self.last_path = None
         self.__ensure_valid()
 
-    def control_auto(self):
+    def control_auto(self, controller: AutoController):
         if self.last_path is None:
             print("generated path")
-            salesman_index_path_list = auto_control(
+            salesman_index_path_list = controller(
                 self.adj,
                 [self.coord2index[coord] for coord in self.salesman_list],
                 [self.coord2index[coord] for coord in self.customer_list],
@@ -81,6 +81,11 @@ class Board(object):
         self.__ensure_valid()
         pass
 
+    def control_force(self, controller: Controller):
+        self.salesman_list = controller(self.salesman_list)
+        self.last_path = None
+        self.__ensure_valid()
+
     def control_one(self, shift: str):
         shift_vector = {
             "w": (-1, 0),
@@ -105,6 +110,10 @@ class Board(object):
         )
 
     def __ensure_valid(self):
+        self.obstacle_list = [(h, w) for h, w in self.obstacle_list if Board.__in_range(self.shape, h, w)]
+        self.customer_list = [(h, w) for h, w in self.customer_list if Board.__in_range(self.shape, h, w)]
+        self.salesman_list = [(h, w) for h, w in self.salesman_list if Board.__in_range(self.shape, h, w)]
+
         obstacle = Board.__mask_to_array(self.shape, self.obstacle_list)
         customer = Board.__mask_to_array(self.shape, self.customer_list)
         salesman = Board.__mask_to_array(self.shape, self.salesman_list)
