@@ -42,7 +42,15 @@ class Game(object):
                     # self.board.control_one(event.text)
                     pass
 
-            state, obstacle_indices, customer_indices, salesman_indices = self.board.view()
+            obstacle_indices, customer_indices, salesman_indices = self.board.view()
+            win = len(customer_indices) == 0
+            lose = len(salesman_indices) == 0
+            state = ""
+            if lose:
+                state = "lose"
+            if win:
+                state = "win"
+
             if state == "win":
                 self.screen.fill((255, 255, 255))
                 self.screen.blit(self.youwin_surf, pygame.Rect((0, 0), self.screen_size))

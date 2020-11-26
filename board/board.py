@@ -91,17 +91,8 @@ class Board(object):
                 self.salesman[0] = new_first
             self.__ensure_valid()
 
-    def view(self) -> Tuple[str, List[Coord], List[Coord], List[Coord]]:
-        win = len(self.customer) == 0
-        lose = len(self.salesman) == 0
-        state = ""
-        if lose:
-            state = "lose"
-        if win:
-            state = "win"
-
+    def view(self) -> Tuple[List[Coord], List[Coord], List[Coord]]:
         return (
-            state,
             self.obstacle,
             self.customer,
             self.salesman,
