@@ -13,6 +13,8 @@ class Game(object):
     obstacle_surf: pygame.Surface = pygame.image.load("./game/assets/obstacle.png")
     customer_surf: pygame.Surface = pygame.image.load("./game/assets/customer.png")
     salesman_surf: pygame.Surface = pygame.image.load("./game/assets/salesman.png")
+    salesman_surf_left: pygame.Surface = pygame.image.load("./game/assets/salesman_left.png")
+    salesman_surf_right: pygame.Surface = pygame.transform.flip(salesman_surf_left, True, False)
     youwin_surf: pygame.Surface = pygame.image.load("./game/assets/youwin.png")
     youlose_surf: pygame.Surface = pygame.image.load("./game/assets/youlose.png")
     screen: pygame.Surface
@@ -28,19 +30,29 @@ class Game(object):
         self.obstacle_surf = pygame.transform.scale(Game.obstacle_surf, cell_size)
         self.customer_surf = pygame.transform.scale(Game.customer_surf, cell_size)
         self.salesman_surf = pygame.transform.scale(Game.salesman_surf, cell_size)
+        self.salesman_surf_left = pygame.transform.scale(Game.salesman_surf_left, cell_size)
+        self.salesman_surf_right = pygame.transform.scale(Game.salesman_surf_right, cell_size)
         self.youwin_surf = pygame.transform.scale(Game.youwin_surf, screen_size)
         self.youlose_surf = pygame.transform.scale(Game.youlose_surf, screen_size)
         self.screen = pygame.display.set_mode(size=screen_size)
 
-    def loop(self):
+    def loop(self, single: bool = True):
         running = True
+        salesman_surf = self.salesman_surf
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                if event.type == pygame.TEXTINPUT:
-                    # self.board.control_one(event.text)
-                    pass
+                if single:
+                    if event.type == pygame.TEXTINPUT:
+                        self.board.control_one(event.text)
+                        salesman_surf_dict = {
+                            "a": self.salesman_surf_left,
+                            "w": self.salesman_surf,
+                            "d": self.salesman_surf_right,
+                            "s": self.salesman_surf,
+                        }
+                        salesman_surf = salesman_surf_dict.get(event.text, salesman_surf)
 
             obstacle_indices, customer_indices, salesman_indices = self.board.view()
             win = len(customer_indices) == 0
@@ -69,12 +81,12 @@ class Game(object):
                     doreturn=False,
                 )
                 self.screen.blits(
-                    self.__blits_sequence(salesman_indices, self.salesman_surf),
+                    self.__blits_sequence(salesman_indices, salesman_surf),
                     doreturn=False,
                 )
 
             pygame.display.flip()
-            if state == "":
+            if not single and state == "":
                 self.board.control_auto()
         pygame.quit()
 
