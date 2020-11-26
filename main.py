@@ -22,10 +22,10 @@ def single():
             salesman=0.01,
         )
         try:
-            board.obstacle.remove((0, 0))
+            board.obstacle_list.remove((0, 0))
         except ValueError as e:
             print(e)
-        board.salesman = [(0, 0)]
+        board.salesman_list = [(0, 0)]
         g = game.Game(board, (40, 40))
         output = g.loop(single=True)
         if output == "r":

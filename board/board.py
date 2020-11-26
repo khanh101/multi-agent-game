@@ -5,16 +5,21 @@ import scipy as sp
 import scipy.sparse
 import scipy.optimize
 
+from board.auto_controller import AutoController
 from board.util import bellman_ford, linear_sum_assignment
 
 Coord = Tuple[int, int]
 
 class Board(object):
     shape: Tuple[int, int]  # hw
-    obstacle: List[Coord]
-    customer: List[Coord]
-    salesman: List[Coord]
+    obstacle_list: List[Coord]
+    customer_list: List[Coord]
+    salesman_list: List[Coord]
 
+    # graph
+    adj: np.ndarray
+    index2coord: List[Tuple[int, int]]
+    coord2index: Dict[Tuple[int, int], int]
     def __init__(
             self,
             shape: Tuple[int, int],
@@ -27,51 +32,33 @@ class Board(object):
         self.shape = shape
         # obstacle
         if isinstance(obstacle, float):
-            self.obstacle = Board.__random_mask(shape, obstacle)
+            self.obstacle_list = Board.__random_mask(shape, obstacle)
         else:
-            self.obstacle = obstacle
+            self.obstacle_list = obstacle
         # customer
         if isinstance(customer, float):
-            self.customer = Board.__random_mask(shape, customer)
+            self.customer_list = Board.__random_mask(shape, customer)
         else:
-            self.customer = customer
+            self.customer_list = customer
         # salesman
         if isinstance(salesman, float):
-            self.salesman = Board.__random_mask(shape, salesman)
+            self.salesman_list = Board.__random_mask(shape, salesman)
         else:
-            self.salesman = salesman
+            self.salesman_list = salesman
+        # graph
+        self.adj, self.index2coord, self.coord2index = Board.__create_graph(self.shape, self.obstacle_list)
 
         self.__ensure_valid()
+
 
     def control_auto(self):
         print("auto move")
         # create graph
-        adj, index2coord, coord2index = Board.__create_graph(self.shape, self.obstacle)
-        # shortest path
-        salesman_index: List[int] = [coord2index[coord] for coord in self.salesman]
-        customer_index: List[int] = [coord2index[coord] for coord in self.customer]
-        indices =[*salesman_index, *customer_index]
-        dist, predecessor = bellman_ford(adj, indices)
-        dist_adj = np.empty(shape=(len(salesman_index), len(customer_index)), dtype=int)
-        for h in range(len(salesman_index)):
-            for w in range(len(customer_index)):
-                # distance between salesman h and customer w
-                dist_adj[h, w] = dist[salesman_index[h]][customer_index[w]]
-        assignment = linear_sum_assignment(dist_adj)
-        salesman2customer: Dict[int, int] = {}
-        for pair in assignment:
-            salesman2customer[salesman_index[pair[0]]] = customer_index[pair[1]]
-
-        for i, s_coord in enumerate(self.salesman):
-            s_index = coord2index[s_coord]
-            c_index = salesman2customer.get(s_index, None)
-            if c_index is None: # salesman does not move
-                continue
-            next_s_index = predecessor[c_index][s_index]
-            if next_s_index == s_index:
-                next_s_index = c_index
-            next_s_coord = index2coord[next_s_index]
-            self.salesman[i] = next_s_coord
+        controller = AutoController(self.adj)
+        self.salesman_list = [self.index2coord[index] for index  in controller.move(
+            [self.coord2index[coord] for coord in self.salesman_list],
+            [self.coord2index[coord] for coord in self.customer_list],
+        )]
         self.__ensure_valid()
         pass
 
@@ -83,25 +70,25 @@ class Board(object):
             "d": (0, +1),
         }
         if shift in shift_vector:
-            first = self.salesman[0]
+            first = self.salesman_list[0]
             new_first = (first[0] + shift_vector[shift][0], first[1] + shift_vector[shift][1])
             if not Board.__in_range(self.shape, new_first[0], new_first[1]):
-                self.salesman = self.salesman[1:]
+                self.salesman_list = self.salesman_list[1:]
             else:
-                self.salesman[0] = new_first
+                self.salesman_list[0] = new_first
             self.__ensure_valid()
 
     def view(self) -> Tuple[List[Coord], List[Coord], List[Coord]]:
         return (
-            self.obstacle,
-            self.customer,
-            self.salesman,
+            self.obstacle_list,
+            self.customer_list,
+            self.salesman_list,
         )
 
     def __ensure_valid(self):
-        obstacle = Board.__mask_to_array(self.shape, self.obstacle)
-        customer = Board.__mask_to_array(self.shape, self.customer)
-        salesman = Board.__mask_to_array(self.shape, self.salesman)
+        obstacle = Board.__mask_to_array(self.shape, self.obstacle_list)
+        customer = Board.__mask_to_array(self.shape, self.customer_list)
+        salesman = Board.__mask_to_array(self.shape, self.salesman_list)
         salesman_bool = salesman.astype(bool)
         customer[salesman_bool] = 0  # if a salesman stands on a customer, remove customer
         cs = customer + salesman
@@ -109,9 +96,9 @@ class Board(object):
         invalid_bool = invalid.astype(bool)
         customer[invalid_bool] = 0 # if a salesman or a customer stands on a obstacle, remove it
         salesman[invalid_bool] = 0
-        self.obstacle = Board.__array_to_mask(obstacle)
-        self.customer = Board.__array_to_mask(customer)
-        self.salesman = Board.__array_to_mask(salesman)
+        self.obstacle_list = Board.__array_to_mask(obstacle)
+        self.customer_list = Board.__array_to_mask(customer)
+        self.salesman_list = Board.__array_to_mask(salesman)
 
 
     @staticmethod
