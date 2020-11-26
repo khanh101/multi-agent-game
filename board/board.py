@@ -64,7 +64,9 @@ class Board(object):
 
         for i, s_coord in enumerate(self.salesman):
             s_index = coord2index[s_coord]
-            c_index = salesman2customer[s_index]
+            c_index = salesman2customer.get(s_index, None)
+            if c_index is None: # salesman does not move
+                continue
             next_s_index = predecessor[c_index][s_index]
             if next_s_index == s_index:
                 next_s_index = c_index
@@ -109,11 +111,13 @@ class Board(object):
         obstacle = Board.__mask_to_array(self.shape, self.obstacle)
         customer = Board.__mask_to_array(self.shape, self.customer)
         salesman = Board.__mask_to_array(self.shape, self.salesman)
-        customer[salesman] = False  # if a salesman stands on a customer, remove customer
-        cs = np.logical_or(customer, salesman)
-        invalid = np.logical_and(cs, obstacle)
-        customer[invalid] = False # if a salesman or a customer stands on a obstacle, remove it
-        salesman[invalid] = False
+        salesman_bool = salesman.astype(bool)
+        customer[salesman_bool] = 0  # if a salesman stands on a customer, remove customer
+        cs = customer + salesman
+        invalid = cs * obstacle
+        invalid_bool = invalid.astype(bool)
+        customer[invalid_bool] = 0 # if a salesman or a customer stands on a obstacle, remove it
+        salesman[invalid_bool] = 0
         self.obstacle = Board.__array_to_mask(obstacle)
         self.customer = Board.__array_to_mask(customer)
         self.salesman = Board.__array_to_mask(salesman)
@@ -124,15 +128,15 @@ class Board(object):
         mask = []
         for h in range(arr.shape[0]):
             for w in range(arr.shape[1]):
-                if arr[h, w]:
+                for _ in range(arr[h, w]):
                     mask.append((h, w))
         return mask
 
     @staticmethod
     def __mask_to_array(shape: Tuple[int, int], mask: List[Coord]) -> np.ndarray:
-        arr = np.zeros(shape=shape, dtype=bool)
+        arr = np.zeros(shape=shape, dtype=int)
         for h, w in mask:
-            arr[h, w] = True
+            arr[h, w] += 1
         return arr
 
     @staticmethod
