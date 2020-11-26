@@ -15,8 +15,8 @@ class Game(object):
     salesman_surf: pygame.Surface = pygame.image.load("./game/assets/salesman.png")
     salesman_surf_left: pygame.Surface = pygame.image.load("./game/assets/salesman_left.png")
     salesman_surf_right: pygame.Surface = pygame.transform.flip(salesman_surf_left, True, False)
-    youwin_surf: pygame.Surface = pygame.image.load("./game/assets/youwin.png")
-    youlose_surf: pygame.Surface = pygame.image.load("./game/assets/youlose.png")
+    youwin_surf: pygame.Surface = pygame.image.load("./game/assets/youwin_qr.png")
+    youlose_surf: pygame.Surface = pygame.image.load("./game/assets/youlose_qr.png")
     screen: pygame.Surface
 
     def __init__(self, board: Board, cell_size: Tuple[int, int] = (50, 50)):
@@ -36,24 +36,33 @@ class Game(object):
         self.youlose_surf = pygame.transform.scale(Game.youlose_surf, screen_size)
         self.screen = pygame.display.set_mode(size=screen_size)
 
-    def loop(self, single: bool = True):
-        running = True
+    def loop(self, single: bool = True) -> str:
+        output = ""
         salesman_surf = self.salesman_surf
+        state = ""
+        running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    output = "q"
                     running = False
                 if single:
                     if event.type == pygame.TEXTINPUT:
-                        self.board.control_one(event.text)
-                        salesman_surf_dict = {
-                            "a": self.salesman_surf_left,
-                            "w": self.salesman_surf,
-                            "d": self.salesman_surf_right,
-                            "s": self.salesman_surf,
-                        }
-                        salesman_surf = salesman_surf_dict.get(event.text, salesman_surf)
-
+                        if not (state == ""):
+                            if event.text in ["r", "q"]:
+                                output = event.text
+                                running = False
+                        else:
+                            self.board.control_one(event.text)
+                            salesman_surf_dict = {
+                                "a": self.salesman_surf_left,
+                                "w": self.salesman_surf,
+                                "d": self.salesman_surf_right,
+                                "s": self.salesman_surf,
+                            }
+                            salesman_surf = salesman_surf_dict.get(event.text, salesman_surf)
+            if not (state == ""):
+                continue
             obstacle_indices, customer_indices, salesman_indices = self.board.view()
             win = len(customer_indices) == 0
             lose = len(salesman_indices) == 0
@@ -89,6 +98,7 @@ class Game(object):
             if not single and state == "":
                 self.board.control_auto()
         pygame.quit()
+        return output
 
     def __blits_sequence(self, indices: List[Tuple[int, int]], surface: pygame.Surface) -> List[
         Tuple[pygame.Surface, pygame.Rect]]:

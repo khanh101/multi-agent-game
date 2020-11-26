@@ -13,20 +13,24 @@ def auto():
     g.loop(single=False)
 
 def single():
-    shape = (15, 20)
-    board = Board(
-        shape=shape,
-        obstacle=0.1,
-        customer=0.05,
-        salesman=0.01,
-    )
-    try:
-        board.obstacle.remove((0, 0))
-    except ValueError as e:
-        print(e)
-    board.salesman = [(0, 0)]
-    g = game.Game(board, (40, 40))
-    g.loop(single=True)
+    while True:
+        shape = (15, 20)
+        board = Board(
+            shape=shape,
+            obstacle=0.1,
+            customer=0.05,
+            salesman=0.01,
+        )
+        try:
+            board.obstacle.remove((0, 0))
+        except ValueError as e:
+            print(e)
+        board.salesman = [(0, 0)]
+        g = game.Game(board, (40, 40))
+        output = g.loop(single=True)
+        if output == "r":
+            continue
+        break
 
 if __name__ == "__main__":
     single()
