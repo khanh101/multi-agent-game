@@ -8,7 +8,7 @@ np.random.seed(1234)
 
 def auto():
     while True:
-        shape = (30, 40)
+        shape = (30, 50)
         board = Board(
             shape=shape,
             obstacle=0.1,
@@ -16,8 +16,8 @@ def auto():
             salesman=0.01,
         )
         g = game.Game(board, (20, 20))
-        #output = g.loop(minimal_sum_of_distances)
-        output = g.loop(graph_partitioning)
+        output = g.loop(minimal_sum_of_distances)
+        # output = g.loop(graph_partitioning)
         if output == "r":
             continue
         break
