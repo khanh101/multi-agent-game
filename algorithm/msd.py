@@ -14,7 +14,7 @@ def minimal_sum_of_distances(graph: np.ndarray, agent_list: List[int], goal_list
     # calculate distances between agents and goals
     indices = [*agent_list, *goal_list]
     dist, predecessor = bellman_ford(graph, indices)
-    bipartite_dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=int)
+    bipartite_dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=float)
     for h, a in enumerate(agent_list):
         for w, g in enumerate(goal_list):
             bipartite_dist_adj[h, w] = dist[a][g]
