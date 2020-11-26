@@ -79,28 +79,12 @@ class Board(object):
             self.last_path = None
 
         self.__ensure_valid()
-        pass
 
     def control_force(self, controller: Controller):
         self.salesman_list = controller(self.salesman_list)
         self.last_path = None
         self.__ensure_valid()
 
-    def control_one(self, shift: str):
-        shift_vector = {
-            "w": (-1, 0),
-            "s": (+1, 0),
-            "a": (0, -1),
-            "d": (0, +1),
-        }
-        if shift in shift_vector:
-            first = self.salesman_list[0]
-            new_first = (first[0] + shift_vector[shift][0], first[1] + shift_vector[shift][1])
-            if not Board.__in_range(self.shape, new_first[0], new_first[1]):
-                self.salesman_list = self.salesman_list[1:]
-            else:
-                self.salesman_list[0] = new_first
-            self.__ensure_valid()
 
     def view(self) -> Tuple[List[Coord], List[Coord], List[Coord]]:
         return (
@@ -110,39 +94,33 @@ class Board(object):
         )
 
     def __ensure_valid(self):
-        self.obstacle_list = [(h, w) for h, w in self.obstacle_list if Board.__in_range(self.shape, h, w)]
-        self.customer_list = [(h, w) for h, w in self.customer_list if Board.__in_range(self.shape, h, w)]
-        self.salesman_list = [(h, w) for h, w in self.salesman_list if Board.__in_range(self.shape, h, w)]
+        # remove all invalid obstacle: outside of the map
+        del_obstacle_indices = []
+        for i, coord in enumerate(self.obstacle_list):
+            if not self.__in_range(coord):
+                del_obstacle_indices.append(i)
+        del_obstacle_indices.reverse()
+        for i in del_obstacle_indices:
+            del self.obstacle_list[i]
+        # remove all invalid salesman: outside of the map or on an obstacle
+        del_salesman_indices = []
+        for i, coord in enumerate(self.salesman_list):
+            if (not self.__in_range(coord)) or (coord in self.obstacle_list):
+                del_salesman_indices.append(i)
+        del_salesman_indices.reverse()
+        for i in del_salesman_indices:
+            del self.salesman_list[i]
+            if self.last_path is not None:
+                del self.last_path[i]
 
-        obstacle = Board.__mask_to_array(self.shape, self.obstacle_list)
-        customer = Board.__mask_to_array(self.shape, self.customer_list)
-        salesman = Board.__mask_to_array(self.shape, self.salesman_list)
-        salesman_bool = salesman.astype(bool)
-        customer[salesman_bool] = 0  # if a salesman stands on a customer, remove customer
-        cs = customer + salesman
-        invalid = cs * obstacle
-        invalid_bool = invalid.astype(bool)
-        customer[invalid_bool] = 0  # if a salesman or a customer stands on a obstacle, remove it
-        salesman[invalid_bool] = 0
-        self.obstacle_list = Board.__array_to_mask(obstacle)
-        self.customer_list = Board.__array_to_mask(customer)
-        self.salesman_list = Board.__array_to_mask(salesman)
-
-    @staticmethod
-    def __array_to_mask(arr: np.ndarray) -> List[Coord]:
-        mask = []
-        for h in range(arr.shape[0]):
-            for w in range(arr.shape[1]):
-                for _ in range(arr[h, w]):
-                    mask.append((h, w))
-        return mask
-
-    @staticmethod
-    def __mask_to_array(shape: Tuple[int, int], mask: List[Coord]) -> np.ndarray:
-        arr = np.zeros(shape=shape, dtype=int)
-        for h, w in mask:
-            arr[h, w] += 1
-        return arr
+        # remove all invalid customer: outside of the map or on an obstacle or a salesman
+        del_customer_indices = []
+        for i, coord in enumerate(self.customer_list):
+            if (not self.__in_range(coord)) or (coord in self.obstacle_list) or (coord in self.salesman_list):
+                del_customer_indices.append(i)
+        del_customer_indices.reverse()
+        for i in del_customer_indices:
+            del self.customer_list[i]
 
     @staticmethod
     def __random_mask(shape: Tuple[int, int], prob: float) -> List[Coord]:
@@ -156,9 +134,10 @@ class Board(object):
                     out.append((h, w))
         return out
 
-    @staticmethod
-    def __in_range(shape: Tuple[int, int], h: int, w: int) -> bool:
-        return h < shape[0] and h >= 0 and w < shape[1] and w >= 0
+    def __in_range(self, coord: Tuple[int,int]) -> bool:
+        H, W = self.shape
+        h, w = coord
+        return h < H and h >= 0 and w < W and w >= 0
 
     @staticmethod
     def __create_graph(shape: Tuple[int, int], obstacle: List[Coord]) -> Tuple[

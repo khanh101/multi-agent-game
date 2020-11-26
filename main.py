@@ -4,15 +4,20 @@ from game import game
 
 
 def auto():
-    shape = (30, 40)
-    board = Board(
-        shape=shape,
-        obstacle=0.1,
-        customer=0.05,
-        salesman=0.01,
-    )
-    g = game.Game(board, (20, 20))
-    g.loop(minimal_sum_of_distances)
+    while True:
+        shape = (30, 40)
+        board = Board(
+            shape=shape,
+            obstacle=0.1,
+            customer=0.05,
+            salesman=0.01,
+        )
+        g = game.Game(board, (20, 20))
+        output = g.loop(minimal_sum_of_distances)
+        if output == "r":
+            continue
+        break
+
 
 
 def single():
