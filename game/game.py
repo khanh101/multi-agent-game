@@ -59,13 +59,13 @@ class Game(object):
                 if event.type == pygame.QUIT:
                     output = "q"
                     running = False
-                if single:
-                    if event.type == pygame.TEXTINPUT:
-                        if not (state == ""):
-                            if event.text in ["r", "q"]:
-                                output = event.text
-                                running = False
-                        else:
+                if event.type == pygame.TEXTINPUT:
+                    if not (state == ""):
+                        if event.text in ["r", "q"]:
+                            output = event.text
+                            running = False
+                    else:
+                        if single:
                             self.board.control_one(event.text)
                             salesman_surf_dict = {
                                 "a": self.salesman_surf_left,

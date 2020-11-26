@@ -34,3 +34,4 @@ def single():
 
 if __name__ == "__main__":
     single()
+    auto()
