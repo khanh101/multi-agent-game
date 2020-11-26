@@ -1,8 +1,9 @@
-from typing import Tuple, List, Any
+from typing import Tuple, List, Any, Optional
 
 import pygame
 
 from board.board import Board
+from board.controller import AutoController
 from board.manual_controller import global_control
 
 
@@ -53,7 +54,7 @@ class Game(object):
         self.youlose_surf = pygame.transform.scale(Game.youlose_surf, screen_size)
         self.screen = pygame.display.set_mode(size=screen_size)
 
-    def loop(self, auto_controller: Any = None) -> str:
+    def loop(self, auto_controller: Optional[AutoController] = None) -> str:
         output = ""
         salesman_surf = self.salesman_surf
         state = ""
