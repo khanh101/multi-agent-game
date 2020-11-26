@@ -1,4 +1,4 @@
-from board.auto_controller import minimal_sum_of_distances_controller
+from algorithm.msd import minimal_sum_of_distances
 from board.board import Board
 from game import game
 
@@ -12,7 +12,7 @@ def auto():
         salesman=0.01,
     )
     g = game.Game(board, (20, 20))
-    g.loop(minimal_sum_of_distances_controller)
+    g.loop(minimal_sum_of_distances)
 
 
 def single():
@@ -24,13 +24,11 @@ def single():
             customer=0.05,
             salesman=0.01,
         )
-        '''
         try:
             board.obstacle_list.remove((0, 0))
         except ValueError as e:
             print(e)
         board.salesman_list = [(0, 0)]
-        '''
         g = game.Game(board, (40, 40))
         output = g.loop()
         if output == "r":

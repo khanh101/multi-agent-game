@@ -1,10 +1,10 @@
-from typing import Tuple, List, Any, Optional
+from typing import Tuple, List, Optional
 
 import pygame
 
 from board.board import Board
 from board.controller import AutoController
-from board.manual_controller import global_control
+from game.global_controller import global_control
 
 
 def darken_and_blur(surface: pygame.Surface, amt: float = 30, opacity=200):

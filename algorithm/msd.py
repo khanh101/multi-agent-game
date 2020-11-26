@@ -6,7 +6,7 @@ import scipy.optimize
 import scipy.sparse
 
 
-def bellman_ford(adj: np.ndarray, indices: List[int]) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
+def __bellman_ford(adj: np.ndarray, indices: List[int]) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
     '''
     bellman ford algorithm
     :param adj: adjacency matrix
@@ -31,7 +31,7 @@ def bellman_ford(adj: np.ndarray, indices: List[int]) -> Tuple[Dict[int, np.ndar
     return dist, predecessor
 
 
-def linear_sum_assignment(cost_matrix: np.ndarray) -> List[Tuple[int, int]]:
+def __linear_sum_assignment(cost_matrix: np.ndarray) -> List[Tuple[int, int]]:
     '''
     see scipy.optimize.linear_sum_assignment
     :param cost_matrix:
@@ -42,7 +42,7 @@ def linear_sum_assignment(cost_matrix: np.ndarray) -> List[Tuple[int, int]]:
     return assignment
 
 
-def minimal_sum_of_distances_controller(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
+def minimal_sum_of_distances(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
     '''
     :param graph: adjacency matrix
     :param agent_list: list of agents
@@ -51,13 +51,13 @@ def minimal_sum_of_distances_controller(graph: np.ndarray, agent_list: List[int]
     '''
     # calculate distances between agents and goals
     indices = [*agent_list, *goal_list]
-    dist, predecessor = bellman_ford(graph, indices)
+    dist, predecessor = __bellman_ford(graph, indices)
     dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=int)
     for h, a in enumerate(agent_list):
         for w, g in enumerate(goal_list):
             dist_adj[h, w] = dist[a][g]
     # assign agents to goals
-    assignment = linear_sum_assignment(dist_adj)
+    assignment = __linear_sum_assignment(dist_adj)
     agent2goal: Dict[int, int] = {}
     for h, w in assignment:
         agent2goal[agent_list[h]] = goal_list[w]
