@@ -53,7 +53,6 @@ class Board(object):
 
     def control_auto(self, controller: AutoController):
         if self.last_path is None:
-            print("generated path")
             salesman_index_path_list = controller(
                 self.adj,
                 [self.coord2index[coord] for coord in self.salesman_list],
@@ -64,7 +63,6 @@ class Board(object):
                 salesman_path_list.append([self.index2coord[index] for index in index_path])
             self.last_path = salesman_path_list
 
-        print("cached path")
         customer_reach = False
         for i, path in enumerate(self.last_path):
             if len(path) == 1:

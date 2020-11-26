@@ -59,6 +59,7 @@ class Game(object):
         salesman_surf = self.salesman_surf
         state = ""
         running = True
+        step = 0
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -71,6 +72,7 @@ class Game(object):
                             running = False
                     else:
                         if auto_controller is None:
+                            step += 1
                             self.board.control_force(global_control(event.text))
                             salesman_surf_dict = {
                                 "a": self.salesman_surf_left,
@@ -114,8 +116,10 @@ class Game(object):
 
             pygame.display.flip()
             if auto_controller is not None and state == "":
+                step += 1
                 self.board.control_auto(auto_controller)
         pygame.quit()
+        print(f"finished in {step} steps")
         return output
 
     def __blits_sequence(self, indices: List[Tuple[int, int]], surface: pygame.Surface) -> List[
