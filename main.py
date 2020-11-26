@@ -1,6 +1,7 @@
 from board.board import Board
 from game import game
 
+
 def auto():
     shape = (30, 40)
     board = Board(
@@ -11,6 +12,7 @@ def auto():
     )
     g = game.Game(board, (20, 20))
     g.loop(single=False)
+
 
 def single():
     while True:
@@ -31,6 +33,7 @@ def single():
         if output == "r":
             continue
         break
+
 
 if __name__ == "__main__":
     single()

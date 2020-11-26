@@ -2,8 +2,8 @@ from typing import List, Dict, Tuple
 
 import numpy as np
 import scipy as sp
-import scipy.sparse
 import scipy.optimize
+import scipy.sparse
 
 
 def bellman_ford(adj: np.ndarray, indices: List[int]) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:

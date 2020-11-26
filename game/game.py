@@ -3,20 +3,23 @@ from typing import Tuple, List
 import pygame
 
 from board.board import Board
-def darken_and_blur(surface: pygame.Surface, amt: float = 30, opacity = 200):
+
+
+def darken_and_blur(surface: pygame.Surface, amt: float = 30, opacity=200):
     if amt < 1.0:
-        raise ValueError("Arg 'amt' must be greater than 1.0, passed in value is %s"%amt)
+        raise ValueError("Arg 'amt' must be greater than 1.0, passed in value is %s" % amt)
     surf = surface.copy()
     darken = pygame.Surface(surf.get_size())
     darken.fill((0, 0, 0))
     darken.set_alpha(opacity)
     surf.blit(darken, (0, 0))
-    scale = 1.0/float(amt)
+    scale = 1.0 / float(amt)
     surf_size = surf.get_size()
-    scale_size = (int(surf_size[0]*scale), int(surf_size[1]*scale))
+    scale_size = (int(surf_size[0] * scale), int(surf_size[1] * scale))
     surf = pygame.transform.smoothscale(surf, scale_size)
     surf = pygame.transform.smoothscale(surf, surf_size)
     return surf
+
 
 class Game(object):
     board: Board

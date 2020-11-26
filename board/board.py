@@ -1,14 +1,11 @@
-from typing import Tuple, Union, List, Dict
+from typing import Tuple, Union, List, Dict, Optional
 
 import numpy as np
-import scipy as sp
-import scipy.sparse
-import scipy.optimize
 
-from board.auto_controller import AutoController
-from board.util import bellman_ford, linear_sum_assignment
+from board.auto_controller import auto_control
 
 Coord = Tuple[int, int]
+
 
 class Board(object):
     shape: Tuple[int, int]  # hw
@@ -20,6 +17,9 @@ class Board(object):
     adj: np.ndarray
     index2coord: List[Tuple[int, int]]
     coord2index: Dict[Tuple[int, int], int]
+    # controller cache
+    last_path: Optional[List[List[Tuple[int, int]]]]
+
     def __init__(
             self,
             shape: Tuple[int, int],
@@ -47,18 +47,37 @@ class Board(object):
             self.salesman_list = salesman
         # graph
         self.adj, self.index2coord, self.coord2index = Board.__create_graph(self.shape, self.obstacle_list)
-
+        # cache controller
+        self.last_path = None
         self.__ensure_valid()
 
-
     def control_auto(self):
-        print("auto move")
-        # create graph
-        controller = AutoController(self.adj)
-        self.salesman_list = [self.index2coord[index] for index  in controller.move(
-            [self.coord2index[coord] for coord in self.salesman_list],
-            [self.coord2index[coord] for coord in self.customer_list],
-        )]
+        if self.last_path is None:
+            print("generated path")
+            salesman_index_path_list = auto_control(
+                self.adj,
+                [self.coord2index[coord] for coord in self.salesman_list],
+                [self.coord2index[coord] for coord in self.customer_list],
+            )
+            salesman_path_list = []
+            for index_path in salesman_index_path_list:
+                salesman_path_list.append([self.index2coord[index] for index in index_path])
+            self.last_path = salesman_path_list
+
+        print("cached path")
+        customer_reach = False
+        for i, path in enumerate(self.last_path):
+            if len(path) == 1:
+                continue
+            if len(path) == 2:
+                customer_reach = True
+                self.salesman_list[i] = path[-1]
+                continue
+            self.salesman_list[i] = path[1]
+            self.last_path[i] = path[1:]
+        if customer_reach:
+            self.last_path = None
+
         self.__ensure_valid()
         pass
 
@@ -94,12 +113,11 @@ class Board(object):
         cs = customer + salesman
         invalid = cs * obstacle
         invalid_bool = invalid.astype(bool)
-        customer[invalid_bool] = 0 # if a salesman or a customer stands on a obstacle, remove it
+        customer[invalid_bool] = 0  # if a salesman or a customer stands on a obstacle, remove it
         salesman[invalid_bool] = 0
         self.obstacle_list = Board.__array_to_mask(obstacle)
         self.customer_list = Board.__array_to_mask(customer)
         self.salesman_list = Board.__array_to_mask(salesman)
-
 
     @staticmethod
     def __array_to_mask(arr: np.ndarray) -> List[Coord]:
@@ -129,13 +147,13 @@ class Board(object):
                     out.append((h, w))
         return out
 
-
     @staticmethod
     def __in_range(shape: Tuple[int, int], h: int, w: int) -> bool:
         return h < shape[0] and h >= 0 and w < shape[1] and w >= 0
 
     @staticmethod
-    def __create_graph(shape: Tuple[int, int], obstacle: List[Coord]) -> Tuple[np.ndarray, List[Coord], Dict[Coord, int]]:
+    def __create_graph(shape: Tuple[int, int], obstacle: List[Coord]) -> Tuple[
+        np.ndarray, List[Coord], Dict[Coord, int]]:
         height, width = shape
         index2coord: List[Coord] = []
         coord2index: Dict[Coord, int] = {}

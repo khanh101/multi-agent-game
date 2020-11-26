@@ -17,10 +17,9 @@ def bellman_ford(adj: np.ndarray, indices: List[int]) -> Tuple[Dict[int, np.ndar
     '''
     dist_reduced, predecessor_reduced = sp.sparse.csgraph.bellman_ford(
         csgraph=adj,
-        directed=False,
+        directed=True,
         indices=indices,
         return_predecessors=True,
-        unweighted=True,
     )
     # dist[i, j]: distance from indices[i] to j
     # predecessor[i, j]: path from indices[i] to j
@@ -43,35 +42,36 @@ def linear_sum_assignment(cost_matrix: np.ndarray) -> List[Tuple[int, int]]:
     return assignment
 
 
-class AutoController(object):
-    graph: np.ndarray
-
-    def __init__(self, graph: np.ndarray):
-        super(AutoController, self).__init__()
-        self.graph = graph
-
-    def move(self, agent_list: List[int], goal_list: List[int]) -> List[int]:
-        # calculate distances between agents and goals
-        indices = [*agent_list, *goal_list]
-        dist, predecessor = bellman_ford(self.graph, indices)
-        dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=int)
-        for h, a in enumerate(agent_list):
-            for w, g in enumerate(goal_list):
-                dist_adj[h, w] = dist[a][g]
-        # assign agents to goals
-        assignment = linear_sum_assignment(dist_adj)
-        agent2goal: Dict[int, int] = {}
-        for h, w in assignment:
-            agent2goal[agent_list[h]] = goal_list[w]
-        # find next position of agents
-        next_agent_list: List[int] = []
-        for a in agent_list:
-            g = agent2goal.get(a, None)
-            if g is None:  # agent does not need to move
-                next_agent_list.append(a)
-                continue
-            next_a = predecessor[g][a]
-            if next_a == a:  # agent and goal is adjacent
-                next_a = g
-            next_agent_list.append(next_a)
-        return next_agent_list
+def auto_control(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
+    '''
+    :param graph: adjacency matrix
+    :param agent_list: list of agents
+    :param goal_list: list of goals
+    :return: path from agents to goals
+    '''
+    # calculate distances between agents and goals
+    indices = [*agent_list, *goal_list]
+    dist, predecessor = bellman_ford(graph, indices)
+    dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=int)
+    for h, a in enumerate(agent_list):
+        for w, g in enumerate(goal_list):
+            dist_adj[h, w] = dist[a][g]
+    # assign agents to goals
+    assignment = linear_sum_assignment(dist_adj)
+    agent2goal: Dict[int, int] = {}
+    for h, w in assignment:
+        agent2goal[agent_list[h]] = goal_list[w]
+    # find next position of agents
+    next_agent_path: List[List[int]] = [[a] for a in agent_list]
+    for i, a in enumerate(agent_list):
+        g = agent2goal.get(a, None)
+        if g is None:  # agent does not need to move
+            continue
+        current_a = a
+        while True:
+            next_a = predecessor[g][current_a]
+            if next_a == -9999:  # goal found
+                break
+            next_agent_path[i].append(next_a)
+            current_a = next_a
+    return next_agent_path
