@@ -33,27 +33,27 @@ def shortest_path(adj: np.ndarray, indices: List[int]) -> Tuple[Dict[int, np.nda
     return dist, predecessor
 
 
-def linear_sum_assignment(cost_matrix: np.ndarray) -> List[Tuple[int, int]]:
+def linear_sum_assignment(cost_matrix: np.ndarray, maximize: bool= False) -> List[Tuple[int, int]]:
     '''
     see scipy.optimize.linear_sum_assignment
     :param cost_matrix:
     :return:
     '''
-    row, col = sp.optimize.linear_sum_assignment(cost_matrix=cost_matrix, maximize=False)
+    row, col = sp.optimize.linear_sum_assignment(cost_matrix=cost_matrix, maximize=maximize)
     assignment: List[Tuple[int, int]] = [(row[i], col[i]) for i in range(len(row))]
     return assignment
 
-def spectral_clustering(adj: np.ndarray, k: int = 2) -> List[Set[int]]:
+def spectral_clustering(adj: np.ndarray, k: int = 2) -> List[List[int]]:
     clustering = SpectralClustering(n_clusters=k, affinity="precomputed").fit(adj)
     label = list(clustering.labels_)
-    comm: List[Set[int]] = []
+    comm_list: List[List[int]] = []
     for l in set(label):
-        c = []
+        comm = []
         for node in range(len(label)):
             if label[node] == l:
-                c.append(node)
-        comm.append(set(c))
-    return comm
+                comm.append(node)
+        comm_list.append(comm)
+    return comm_list
 
 def assignment_to_path(agent_list: List[int], predecessor: Dict[int, np.ndarray], assignment: List[Tuple[int, int]]) -> List[List[int]]:
     agent2goal: Dict[int, int] = {}

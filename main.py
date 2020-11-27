@@ -8,14 +8,14 @@ np.random.seed(1234)
 
 def auto():
     while True:
-        shape = (30, 50)
+        shape = (40, 80)
         board = Board(
             shape=shape,
             obstacle=0.1,
-            customer=0.05,
-            salesman=0.01,
+            customer=0.050,
+            salesman=0.005,
         )
-        g = game.Game(board, (20, 20))
+        g = game.Game(board, (15, 15))
         output = g.loop(minimal_sum_of_costs)
         # output = g.loop(graph_partitioning)
         if output == "r":

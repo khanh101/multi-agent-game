@@ -14,56 +14,64 @@ def graph_partitioning_assignment(graph: np.ndarray, agent_list: List[int], goal
     if len(agent_list) == 0 or len(goal_list) == 0:
         return [], None
 
-
-
     # calculate distances between agents and goals
     indices = [*agent_list, *goal_list]
     dist, predecessor = shortest_path(graph, indices)
 
-    if len(indices) > 2:
-        inv_dist_reduced = np.zeros(shape=(len(indices), len(indices)), dtype=float)
-        for h in range(len(indices)):
-            for w in range(len(indices)):
-                if dist[indices[h]][indices[w]] != 0:
-                    inv_dist_reduced[h, w] = 1 / dist[indices[h]][indices[w]]
-                else:
-                    inv_dist_reduced[h, w] = 1.0
+    def nearest(dist: np.ndarray, indices: List[int]) -> int:
+        idx = None
+        minimal = float("inf")
+        for i in indices:
+            if dist[i] < minimal:
+                idx = i
+                minimal = dist[i]
+        return idx
 
-        comm1_reduced, comm2_reduced = spectral_clustering(inv_dist_reduced, k=2)
-        comm1 = [indices[i] for i in comm1_reduced]
-        comm2 = [indices[i] for i in comm2_reduced]
-        # verify cut: at least one partition has 2 types of node
-        def exists(seq: List[Any], cond: Callable[[Any], bool]) -> bool:
-            for elem in seq:
-                if cond(elem):
-                    return True
-            return False
+    if len(agent_list) == 1:
+        a = agent_list[0]
+        g = nearest(dist[a], goal_list)
+        return [(a, g)], predecessor
 
-        def filter(seq: List[Any], cond: Callable[[Any], bool]) -> Tuple[List[Any], List[Any]]:
-            true = []
-            false = []
-            for elem in seq:
-                if cond(elem):
-                    true.append(elem)
-                else:
-                    false.append(elem)
-            return true, false
+    if len(goal_list) < len(agent_list):
+        # msoc
+        ag_dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=float)
+        for h, a in enumerate(agent_list):
+            for w, g in enumerate(goal_list):
+                ag_dist_adj[h, w] = dist[a][g]
+        # assign agents to goals
+        assignment_reduced = linear_sum_assignment(ag_dist_adj)
+        assignment = [(agent_list[h], goal_list[w]) for h, w in assignment_reduced]
+        return assignment, predecessor
 
+    # graph partitioning if there are more than one agent
+    inv_goal_dist = np.empty(shape=(len(goal_list), len(goal_list)), dtype=float)
+    for h, g_h in enumerate(goal_list):
+        for w, g_w in enumerate(goal_list):
+            d = dist[g_h][g_w]
+            if d == 0: d = 1.0
+            inv_goal_dist[h, w] = 1 / d
 
-        if exists(comm1, lambda elem: elem in agent_list) and exists(comm1, lambda elem: elem in goal_list) and exists(comm2, lambda elem: elem in agent_list) and exists(comm2, lambda elem: elem in goal_list):
-            # bi-partition
-            comm1_agent_list, comm1_goal_list = filter(comm1, lambda elem: elem in agent_list)
-            comm2_agent_list, comm2_goal_list = filter(comm2, lambda elem: elem in agent_list)
-            assignment1, _ = graph_partitioning_assignment(graph, comm1_agent_list, comm1_goal_list)
-            assignment2, _ = graph_partitioning_assignment(graph, comm2_agent_list, comm2_goal_list)
-            return [*assignment1, *assignment2], predecessor
+    comm_reduced_list = spectral_clustering(inv_goal_dist, k=len(agent_list))
+    comm_list: List[List[int]] = []
+    for comm_reduced in comm_reduced_list:
+        comm_list.append([goal_list[i] for i in comm_reduced])
 
-    bipartite_dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=int)
-    for h, a in enumerate(agent_list):
-        for w, g in enumerate(goal_list):
-            bipartite_dist_adj[h, w] = dist[a][g]
-    assignment_reduced = linear_sum_assignment(bipartite_dist_adj)
-    assignment = [(agent_list[h], goal_list[w]) for h, w in assignment_reduced]
+    ac_dist = np.empty(shape=(len(agent_list), len(comm_list)), dtype=float)
+    for i_a, a in enumerate(agent_list):
+        for i_c, comm in enumerate(comm_list):
+            avg_dist = 0
+            for g in comm:
+                avg_dist += dist[a][g]
+            avg_dist /= len(comm)
+            ac_dist[i_a, i_c] = avg_dist
+
+    comm_reduced_assignment = linear_sum_assignment(ac_dist)
+    comm_assignment: List[Tuple[int, List[int]]] = []
+    for i_a, i_c in comm_reduced_assignment:
+        comm_assignment.append((agent_list[i_a], comm_list[i_c]))
+
+    assignment: List[Tuple[int, int]] = []
+    for a, comm in comm_assignment:
+        g = nearest(dist[a], comm)
+        assignment.append((a, g))
     return assignment, predecessor
-
-

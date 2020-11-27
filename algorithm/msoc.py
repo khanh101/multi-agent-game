@@ -14,11 +14,11 @@ def minimal_sum_of_costs(graph: np.ndarray, agent_list: List[int], goal_list: Li
     # calculate distances between agents and goals
     indices = [*agent_list, *goal_list]
     dist, predecessor = shortest_path(graph, indices)
-    bipartite_dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=float)
+    ag_dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=float)
     for h, a in enumerate(agent_list):
         for w, g in enumerate(goal_list):
-            bipartite_dist_adj[h, w] = dist[a][g]
+            ag_dist_adj[h, w] = dist[a][g]
     # assign agents to goals
-    assignment_reduced = linear_sum_assignment(bipartite_dist_adj)
+    assignment_reduced = linear_sum_assignment(ag_dist_adj)
     assignment = [(agent_list[h], goal_list[w]) for h, w in assignment_reduced]
     return assignment_to_path(agent_list, predecessor, assignment)
