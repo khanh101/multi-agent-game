@@ -1,7 +1,7 @@
 from typing import List, Dict
 import numpy as np
 
-from algorithm.util import bellman_ford, linear_sum_assignment, assignment_to_path
+from algorithm.util import shortest_path, linear_sum_assignment, assignment_to_path
 
 
 def minimal_sum_of_costs(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
@@ -13,7 +13,7 @@ def minimal_sum_of_costs(graph: np.ndarray, agent_list: List[int], goal_list: Li
     '''
     # calculate distances between agents and goals
     indices = [*agent_list, *goal_list]
-    dist, predecessor = bellman_ford(graph, indices)
+    dist, predecessor = shortest_path(graph, indices)
     bipartite_dist_adj = np.empty(shape=(len(agent_list), len(goal_list)), dtype=float)
     for h, a in enumerate(agent_list):
         for w, g in enumerate(goal_list):

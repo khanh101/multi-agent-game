@@ -2,7 +2,7 @@ from typing import List, Tuple, Any, Callable, Dict, Optional
 
 import numpy as np
 
-from algorithm.util import bellman_ford, spectral_clustering, linear_sum_assignment, assignment_to_path
+from algorithm.util import shortest_path, spectral_clustering, linear_sum_assignment, assignment_to_path
 
 
 def graph_partitioning(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
@@ -18,7 +18,7 @@ def graph_partitioning_assignment(graph: np.ndarray, agent_list: List[int], goal
 
     # calculate distances between agents and goals
     indices = [*agent_list, *goal_list]
-    dist, predecessor = bellman_ford(graph, indices)
+    dist, predecessor = shortest_path(graph, indices)
 
     if len(indices) > 2:
         inv_dist_reduced = np.zeros(shape=(len(indices), len(indices)), dtype=float)

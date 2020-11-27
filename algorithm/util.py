@@ -7,16 +7,17 @@ import scipy.sparse
 from sklearn.cluster import SpectralClustering
 
 
-def bellman_ford(adj: np.ndarray, indices: List[int]) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
+def shortest_path(adj: np.ndarray, indices: List[int]) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
     '''
-    bellman ford algorithm
+    shortest path algorithm
     :param adj: adjacency matrix
     :param indices: indices of nodes used to calculate distances
     :return dist: dist[i][j]: distance from node (i) to node (j) (i: row, j col)
     :return predecessor:    predecessor[j][i] : first node to move from node (i) to node (j) (i: row, j: col)
                             if predecessor[j][i] == i: two nodes are neighbour
     '''
-    dist_reduced, predecessor_reduced = sp.sparse.csgraph.bellman_ford(
+    dist_reduced, predecessor_reduced = sp.sparse.csgraph.shortest_path(
+        method="D", # Dijkstra
         csgraph=adj,
         directed=True,
         indices=indices,
