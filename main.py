@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from algorithm.msoc import minimal_sum_of_costs
+from algorithm.msoc import minimal_sum_of_costs_controller
 from algorithm.gp import graph_partitioning_controller
 from board.board import Board
 from game import game
@@ -13,7 +13,7 @@ def board_size(shape: Tuple[int, int]) -> int:
 
 def auto():
     while True:
-        shape = (40, 60)
+        shape = (30, 40)
         board = Board(
             shape=shape,
             obstacle=int(0.1 * board_size(shape)),
@@ -21,8 +21,8 @@ def auto():
             salesman=int(0.01 * board_size(shape)),
         )
         g = game.Game(board, (15, 15))
-        # output = g.loop(minimal_sum_of_costs)
-        output = g.loop(graph_partitioning_controller)
+        output = g.loop(minimal_sum_of_costs_controller)
+        # output = g.loop(graph_partitioning_controller)
         if output == "r":
             continue
         break

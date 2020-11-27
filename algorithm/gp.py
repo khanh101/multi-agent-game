@@ -59,11 +59,18 @@ def graph_partitioning_assignment(graph: np.ndarray, agent_list: List[int], goal
     ac_dist = np.empty(shape=(len(agent_list), len(comm_list)), dtype=float)
     for i_a, a in enumerate(agent_list):
         for i_c, comm in enumerate(comm_list):
+            '''
             avg_dist = 0
             for g in comm:
                 avg_dist += dist[a][g]
             avg_dist /= len(comm)
             ac_dist[i_a, i_c] = avg_dist
+            '''
+            least_dist = float("inf")
+            for g in comm:
+                if dist[a][g] < least_dist:
+                    least_dist = dist[a][g]
+            ac_dist[i_a, i_c] = least_dist
 
     comm_reduced_assignment = linear_sum_assignment(ac_dist)
     comm_assignment: List[Tuple[int, List[int]]] = []
