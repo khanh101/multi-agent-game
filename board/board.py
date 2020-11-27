@@ -23,25 +23,25 @@ class Board(object):
     def __init__(
             self,
             shape: Tuple[int, int],
-            obstacle: Union[List[Coord], float],
-            customer: Union[List[Coord], float],
-            salesman: Union[List[Coord], float],
+            obstacle: Union[List[Coord], int],
+            customer: Union[List[Coord], int],
+            salesman: Union[List[Coord], int],
     ):
         super(Board, self).__init__()
         # shape
         self.shape = shape
         # obstacle
-        if isinstance(obstacle, float):
+        if isinstance(obstacle, int):
             self.obstacle_list = Board.__random_mask(shape, obstacle)
         else:
             self.obstacle_list = obstacle
         # customer
-        if isinstance(customer, float):
+        if isinstance(customer, int):
             self.customer_list = Board.__random_mask(shape, customer)
         else:
             self.customer_list = customer
         # salesman
-        if isinstance(salesman, float):
+        if isinstance(salesman, int):
             self.salesman_list = Board.__random_mask(shape, salesman)
         else:
             self.salesman_list = salesman
@@ -121,16 +121,13 @@ class Board(object):
             del self.customer_list[i]
 
     @staticmethod
-    def __random_mask(shape: Tuple[int, int], prob: float) -> List[Coord]:
-        mask_float = np.random.random(size=shape)
-        mask = mask_float < prob
-        out = []
-        height, width = mask.shape
-        for h in range(height):
-            for w in range(width):
-                if mask[h][w]:
-                    out.append((h, w))
-        return out
+    def __random_mask(shape: Tuple[int, int], count: int) -> List[Coord]:
+        coord_list = []
+        for h in range(shape[0]):
+            for w in range(shape[1]):
+                coord_list.append((h, w))
+        indices = np.random.choice(range(len(coord_list)), size=(count,), replace=False)
+        return [coord for i_c, coord in enumerate(coord_list) if i_c in indices]
 
     def __in_range(self, coord: Tuple[int,int]) -> bool:
         H, W = self.shape
