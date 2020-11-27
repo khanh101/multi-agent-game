@@ -4,7 +4,7 @@ import numpy as np
 import scipy as sp
 import scipy.optimize
 import scipy.sparse
-from sklearn.cluster import SpectralClustering
+from sklearn.cluster import SpectralClustering, AffinityPropagation
 
 
 def shortest_path(adj: np.ndarray, indices: List[int]) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
@@ -43,8 +43,9 @@ def linear_sum_assignment(cost_matrix: np.ndarray, maximize: bool= False) -> Lis
     assignment: List[Tuple[int, int]] = [(row[i], col[i]) for i in range(len(row))]
     return assignment
 
-def spectral_clustering(adj: np.ndarray, k: int = 2) -> List[List[int]]:
-    clustering = SpectralClustering(n_clusters=k, affinity="precomputed").fit(adj)
+def graph_partitioning(adj: np.ndarray, k: int = 2) -> List[List[int]]:
+    # clustering = SpectralClustering(n_clusters=k, affinity="precomputed", random_state=None).fit(adj)
+    clustering = AffinityPropagation(affinity="precomputed", random_state=None).fit(adj)
     label = list(clustering.labels_)
     comm_list: List[List[int]] = []
     for l in set(label):

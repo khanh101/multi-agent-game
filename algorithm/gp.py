@@ -2,10 +2,10 @@ from typing import List, Tuple, Any, Callable, Dict, Optional
 
 import numpy as np
 
-from algorithm.util import shortest_path, spectral_clustering, linear_sum_assignment, assignment_to_path
+from algorithm.util import shortest_path, graph_partitioning, linear_sum_assignment, assignment_to_path
 
 
-def graph_partitioning(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
+def graph_partitioning_controller(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
     assignment, predecessor = graph_partitioning_assignment(graph, agent_list, goal_list)
     return assignment_to_path(agent_list, predecessor, assignment)
 
@@ -51,7 +51,7 @@ def graph_partitioning_assignment(graph: np.ndarray, agent_list: List[int], goal
             if d == 0: d = 1.0
             inv_goal_dist[h, w] = 1 / d
 
-    comm_reduced_list = spectral_clustering(inv_goal_dist, k=len(agent_list))
+    comm_reduced_list = graph_partitioning(inv_goal_dist, k=len(agent_list))
     comm_list: List[List[int]] = []
     for comm_reduced in comm_reduced_list:
         comm_list.append([goal_list[i] for i in comm_reduced])
