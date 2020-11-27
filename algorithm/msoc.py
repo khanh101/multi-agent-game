@@ -4,7 +4,7 @@ import numpy as np
 from algorithm.util import bellman_ford, linear_sum_assignment, assignment_to_path
 
 
-def minimal_sum_of_distances(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
+def minimal_sum_of_costs(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> List[List[int]]:
     '''
     :param graph: adjacency matrix
     :param agent_list: list of agents

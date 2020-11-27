@@ -1,4 +1,4 @@
-from algorithm.msd import minimal_sum_of_distances
+from algorithm.msoc import minimal_sum_of_costs
 from algorithm.gp import graph_partitioning
 from board.board import Board
 from game import game
@@ -16,7 +16,7 @@ def auto():
             salesman=0.01,
         )
         g = game.Game(board, (20, 20))
-        output = g.loop(minimal_sum_of_distances)
+        output = g.loop(minimal_sum_of_costs)
         # output = g.loop(graph_partitioning)
         if output == "r":
             continue
