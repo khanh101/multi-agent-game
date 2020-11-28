@@ -10,7 +10,8 @@ def graph_partitioning_controller(graph: np.ndarray, agent_list: List[int], goal
     return assignment_to_path(agent_list, predecessor, assignment)
 
 
-def graph_partitioning_assignment(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> Tuple[List[Tuple[int, int]], Optional[Dict[int, np.ndarray]]]:
+def graph_partitioning_assignment(graph: np.ndarray, agent_list: List[int], goal_list: List[int]) -> Tuple[
+    List[Tuple[int, int]], Optional[Dict[int, np.ndarray]]]:
     if len(agent_list) == 0 or len(goal_list) == 0:
         return [], None
 
@@ -26,6 +27,7 @@ def graph_partitioning_assignment(graph: np.ndarray, agent_list: List[int], goal
                 idx = i
                 minimal = dist[i]
         return idx
+
     # one agent, find nearest goal
     if len(agent_list) == 1:
         a = agent_list[0]

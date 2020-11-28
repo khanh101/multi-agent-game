@@ -12,6 +12,7 @@ def global_control(command: str) -> Controller:
             "d": (0, +1),
         }
         dh, dw = shift_vector.get(command, (0, 0))
-        next_agent_list = [(h+dh, w+dw) for h, w in agent_list]
+        next_agent_list = [(h + dh, w + dw) for h, w in agent_list]
         return next_agent_list
+
     return control

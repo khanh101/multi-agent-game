@@ -69,10 +69,9 @@ class Game(object):
 
     def loop(self, auto_controller: Optional[AutoController] = None) -> str:
         class State(Enum):
-            RUNNING = 0 # playing
-            QUIT = 1 # quit
-            ENDED = 2 # won or lost
-
+            RUNNING = 0  # playing
+            QUIT = 1  # quit
+            ENDED = 2  # won or lost
 
         salesman_surf = self.salesman_surf
         num_steps = 0

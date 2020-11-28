@@ -6,10 +6,13 @@ from board.board import Board
 from game import game
 
 import numpy as np
+
 np.random.seed(1234)
+
 
 def board_size(shape: Tuple[int, int]) -> int:
     return shape[0] * shape[1]
+
 
 def auto():
     while True:
@@ -26,7 +29,6 @@ def auto():
         if output == "r":
             continue
         break
-
 
 
 def single():

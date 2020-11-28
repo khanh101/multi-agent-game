@@ -83,7 +83,6 @@ class Board(object):
         self.last_path = None
         self.__ensure_valid()
 
-
     def view(self) -> Tuple[List[Coord], List[Coord], List[Coord]]:
         return (
             self.obstacle_list,
@@ -129,7 +128,7 @@ class Board(object):
         indices = np.random.choice(range(len(coord_list)), size=(count,), replace=False)
         return [coord for i_c, coord in enumerate(coord_list) if i_c in indices]
 
-    def __in_range(self, coord: Tuple[int,int]) -> bool:
+    def __in_range(self, coord: Tuple[int, int]) -> bool:
         H, W = self.shape
         h, w = coord
         return h < H and h >= 0 and w < W and w >= 0
