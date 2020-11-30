@@ -1,8 +1,9 @@
-from typing import Tuple
+from typing import Tuple, List, Optional
 
 from algorithm.msoc import minimal_sum_of_costs_controller
 from algorithm.gp import graph_partitioning_controller
 from board.board import Board
+from board.controller import AutoController
 from game import game
 
 import numpy as np
@@ -13,43 +14,46 @@ np.random.seed(1234)
 def board_size(shape: Tuple[int, int]) -> int:
     return shape[0] * shape[1]
 
-
-def auto():
+def play(shape: Tuple[int, int], cell_size: Tuple[int, int], init_salesman_list: List[Tuple[int, int]] = None, auto_controller: Optional[AutoController] = None):
     while True:
-        shape = (30, 80)
-        board = Board(
-            shape=shape,
-            obstacle=int(0.1 * board_size(shape)),
-            customer=int(0.05 * board_size(shape)),
-            salesman=int(0.01 * board_size(shape)),
-        )
-        g = game.Game(board, (15, 15))
-        # output = g.loop(minimal_sum_of_costs_controller)
-        output = g.loop(graph_partitioning_controller)
+        if init_salesman_list is not None:
+            board = Board(
+                shape=shape,
+                obstacle=int(0.1 * board_size(shape)),
+                customer=int(0.05 * board_size(shape)),
+                salesman=init_salesman_list,
+            )
+        else:
+            board = Board(
+                shape=shape,
+                obstacle=int(0.1 * board_size(shape)),
+                customer=int(0.05 * board_size(shape)),
+                salesman=int(0.01 * board_size(shape)),
+            )
+        g = game.Game(board, cell_size)
+        output = g.loop(auto_controller)
         if output == "r":
             continue
         break
+
+
+def auto():
+    play(
+        shape=(30, 80),
+        cell_size=(15, 15),
+        init_salesman_list= None,
+        auto_controller=minimal_sum_of_costs_controller,
+        # auto_controller=graph_partitioning_controller,
+    )
 
 
 def single():
-    while True:
-        shape = (15, 20)
-        board = Board(
-            shape=shape,
-            obstacle=int(0.1 * board_size(shape)),
-            customer=int(0.05 * board_size(shape)),
-            salesman=0,
-        )
-        try:
-            board.obstacle_list.remove((0, 0))
-        except ValueError as e:
-            print(e)
-        board.salesman_list = [(0, 0)]
-        g = game.Game(board, (40, 40))
-        output = g.loop()
-        if output == "r":
-            continue
-        break
+    play(
+        shape=(15, 20),
+        cell_size=(40, 40),
+        init_salesman_list=[(0, 0)],
+        auto_controller=None,
+    )
 
 
 if __name__ == "__main__":
