@@ -30,13 +30,13 @@ class Game(object):
     cell_dim: Tuple[int, int]  # wh
     cell_size: Tuple[int, int]  # wh
     screen_size: Tuple[int, int]  # wh
-    obstacle_surf: pygame.Surface = pygame.image.load("./game/assets/obstacle.png")
-    customer_surf: pygame.Surface = pygame.image.load("./game/assets/customer.png")
-    salesman_surf: pygame.Surface = pygame.image.load("./game/assets/salesman.png")
-    salesman_surf_left: pygame.Surface = pygame.image.load("./game/assets/salesman_left.png")
+    obstacle_surf: pygame.Surface = pygame.image.load("./game/assets/obstacle.bmp")
+    customer_surf: pygame.Surface = pygame.image.load("./game/assets/customer.bmp")
+    salesman_surf: pygame.Surface = pygame.image.load("./game/assets/salesman.bmp")
+    salesman_surf_left: pygame.Surface = pygame.image.load("./game/assets/salesman_left.bmp")
     salesman_surf_right: pygame.Surface = pygame.transform.flip(salesman_surf_left, True, False)
-    youwin_surf: pygame.Surface = pygame.image.load("./game/assets/youwin_qr.png")
-    youlose_surf: pygame.Surface = pygame.image.load("./game/assets/youlose_qr.png")
+    youwin_surf: pygame.Surface = pygame.image.load("./game/assets/youwin_qr.bmp")
+    youlose_surf: pygame.Surface = pygame.image.load("./game/assets/youlose_qr.bmp")
     screen: pygame.Surface
 
     def __init__(self, board: Board, cell_size: Tuple[int, int] = None):
