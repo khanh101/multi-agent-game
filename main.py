@@ -39,7 +39,7 @@ def play(shape: Tuple[int, int], cell_size: Tuple[int, int], init_salesman_list:
 
 def auto():
     play(
-        shape=(30, 80),
+        shape=(45, 60),
         cell_size=(15, 15),
         init_salesman_list= None,
         auto_controller=minimal_sum_of_costs_controller,
