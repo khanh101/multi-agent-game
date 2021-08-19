@@ -1,4 +1,4 @@
-# multi-agent-travelling-saleman-problem
+# multi agent game
 
 - [Github](https://github.com/khanhhhh/mtsp)
 
