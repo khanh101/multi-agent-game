@@ -14,7 +14,9 @@ np.random.seed(1234)
 def board_size(shape: Tuple[int, int]) -> int:
     return shape[0] * shape[1]
 
-def play(shape: Tuple[int, int], cell_size: Tuple[int, int], init_salesman_list: List[Tuple[int, int]] = None, auto_controller: Optional[AutoController] = None):
+
+def play(shape: Tuple[int, int], cell_size: Tuple[int, int], init_salesman_list: List[Tuple[int, int]] = None,
+         auto_controller: Optional[AutoController] = None):
     while True:
         if init_salesman_list is not None:
             board = Board(
@@ -41,7 +43,7 @@ def auto():
     play(
         shape=(45, 60),
         cell_size=(15, 15),
-        init_salesman_list= None,
+        init_salesman_list=None,
         auto_controller=minimal_sum_of_costs_controller,
         # auto_controller=graph_partitioning_controller,
     )
